@@ -70,35 +70,39 @@
           </div>
         </div>
         <div class="d-flex flex-column gap-20">
-          <h2>Создать c запросом</h2>
+          <h2>Получить через сервис</h2>
           <v-select
           hide-details
           varian="outlined"
           label="Format"
           color="primary"
-          :items="['jpg', 'png', 'bmp', 'svg']"
+          :items="['jpg', 'png', 'webp']"
           v-model="format2" 
           > </v-select>
           <div class="d-flex justify-center">
-            <v-btn @click="convertRequest" color="primary">Создать</v-btn>
+            <v-btn @click="convertRequest" color="primary">Отправить запрос</v-btn>
           </div>
           <div class="result align-center flex-column d-flex gap-20">
             <h2>Result img</h2>
             <img :src="imgSrc2" alt="">
+
           </div>
         </div>
       </div>
     </div>
 
     <h2>Preview</h2>
-    <div 
+    <div class="preview"
       ref="preview"
-      class="d-flex justify-center align-center preview"
-      style="color: #6200EE;
-            padding: 20px;
-            border: 3px solid #6200EE;"
-      :style="{'width': width + 'px',
-              'height': height + 'px'}">
+         :style="{'width': `${width}px`, 'height': `${height}px`}"
+      style="display:flex;
+             justify-content: center;
+             align-items: center;
+             text-align: center;
+             color: #6200EE;
+             padding: 10px;
+             border: 3px solid #6200EE;"
+      >
       {{ text }}
     </div>
 </v-container>
@@ -106,6 +110,7 @@
 
 <script>
 import domtoimage from 'dom-to-image';
+import axios from "axios";
 
 export default {
   name: 'HelloWorld',
@@ -141,8 +146,25 @@ export default {
 
       }
     },
-    convertRequest() {
+    async convertRequest() {
+      const payload = {
+        html: this.$refs.preview.outerHTML,
+      }
+      const { API_ID, API_KEY } = {API_ID: '790276b7-0a75-4315-a803-7b925f9d89fc', API_KEY: 'd7867654-d7a4-43a8-a449-5d75e63ae719'}
 
+      console.log(API_ID, API_KEY)
+
+      const queryParams = `?width=${this.width}&height=${this.height}`
+
+      const response = await axios.post(`https://hcti.io/v1/image/`,
+          payload, {
+          auth: {
+            username: API_ID,
+            password: API_KEY
+          }
+      })
+      this.imgSrc2 = response.data.url + `.${this.format2}/${queryParams}`
+      console.log(response)
     }
   },
 }
